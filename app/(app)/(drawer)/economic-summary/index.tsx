@@ -15,6 +15,7 @@ import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import { supabase } from '@/lib/supabase';
 import { EconomicData } from '@/types/database.types';
+import { router } from 'expo-router';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -113,6 +114,11 @@ export default function EconomicSummaryScreen() {
     setCurrentPage(totalPages);
   };
 
+  const handleBackToHome = () => {
+    console.log('EconomicSummary: Navigating back to home');
+    router.push('/(app)/(drawer)/(home)');
+  };
+
   const formatNumber = (value: number | null | undefined) => {
     if (value === null || value === undefined) return '-';
     return value.toLocaleString('en-US', {
@@ -126,6 +132,16 @@ export default function EconomicSummaryScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBackToHome}>
+          <IconSymbol
+            ios_icon_name="chevron.left"
+            android_material_icon_name="arrow_back"
+            size={24}
+            color={colors.primary}
+          />
+          <Text style={styles.backButtonText}>Back to Home</Text>
+        </TouchableOpacity>
+        
         <View style={styles.headerTop}>
           <IconSymbol
             ios_icon_name="dollarsign.circle.fill"
@@ -325,6 +341,18 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
     elevation: 2,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingVertical: 8,
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 4,
   },
   headerTop: {
     flexDirection: 'row',

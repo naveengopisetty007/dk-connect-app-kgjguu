@@ -162,6 +162,14 @@ export default function DrawerLayout() {
           ),
         }}
       />
+      <Drawer.Screen
+        name="economic-summary"
+        options={{
+          drawerLabel: () => null,
+          title: 'Economic Summary',
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
     </Drawer>
   );
 }
