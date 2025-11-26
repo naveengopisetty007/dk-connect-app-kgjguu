@@ -170,6 +170,22 @@ export default function DrawerLayout() {
           drawerItemStyle: { display: 'none' },
         }}
       />
+      <Drawer.Screen
+        name="expiring-contracts"
+        options={{
+          drawerLabel: () => null,
+          title: 'Expiring Contracts',
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="customer-allocations"
+        options={{
+          drawerLabel: () => null,
+          title: 'Customer Allocations',
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
     </Drawer>
   );
 }
