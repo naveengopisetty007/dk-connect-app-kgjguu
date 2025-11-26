@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
+import Dropdown, { DropdownOption } from '@/components/Dropdown';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Comment } from '@/types/database.types';
@@ -39,6 +40,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [loadingComments, setLoadingComments] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<DropdownOption[]>([]);
 
   const dashboardCards: DashboardCard[] = [
     {
@@ -75,9 +77,55 @@ export default function HomeScreen() {
     },
   ];
 
+  const subjectOptions: DropdownOption[] = [
+    { label: 'Sales Request Comment', value: 'Sales Request Comment' },
+    { label: 'Technical Support', value: 'Technical Support' },
+    { label: 'Billing Inquiry', value: 'Billing Inquiry' },
+    { label: 'Product Feedback', value: 'Product Feedback' },
+    { label: 'General Inquiry', value: 'General Inquiry' },
+  ];
+
+  const submissionTypeOptions: DropdownOption[] = [
+    { label: 'General', value: 'General' },
+    { label: 'RFP/Offer', value: 'RFP/Offer' },
+    { label: 'Contract Upload', value: 'Contract Upload' },
+    { label: 'Lead', value: 'Lead' },
+  ];
+
   useEffect(() => {
     fetchComments();
+    fetchCustomers();
   }, []);
+
+  const fetchCustomers = async () => {
+    try {
+      console.log('Home: Fetching customers');
+      const { data, error } = await supabase
+        .from('comments')
+        .select('customer_name')
+        .not('customer_name', 'is', null)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.log('Home: Error fetching customers', error);
+        throw error;
+      }
+
+      const uniqueCustomers = Array.from(
+        new Set(data?.map((item) => item.customer_name) || [])
+      );
+
+      const customerOptions: DropdownOption[] = uniqueCustomers.map((name) => ({
+        label: name,
+        value: name,
+      }));
+
+      console.log('Home: Customers fetched', customerOptions.length);
+      setCustomers(customerOptions);
+    } catch (error: any) {
+      console.log('Home: Error fetching customers', error.message);
+    }
+  };
 
   const fetchComments = async () => {
     try {
@@ -142,12 +190,11 @@ export default function HomeScreen() {
         .from('comments')
         .insert([
           {
-            user_id: user?.id,
-            user_name: user?.email?.split('@')[0] || 'User',
+            author: user?.id,
             customer_name: customerName,
             subject: subject,
             submission_type: submissionType,
-            comment_text: commentText,
+            body: commentText,
           },
         ])
         .select()
@@ -172,10 +219,10 @@ export default function HomeScreen() {
             await supabase.from('attachments').insert([
               {
                 comment_id: data.id,
-                file_name: file.fileName || 'file',
-                file_url: fileName,
-                file_type: file.type || 'image',
-                file_size: file.fileSize || 0,
+                filename: file.fileName || 'file',
+                storage_path: fileName,
+                mime_type: file.type || 'image',
+                size: file.fileSize || 0,
               },
             ]);
           }
@@ -188,6 +235,7 @@ export default function HomeScreen() {
       setSelectedFiles([]);
       setIsNewCustomer(false);
       fetchComments();
+      fetchCustomers();
       Alert.alert('Success', 'Comment posted successfully');
     } catch (error: any) {
       console.log('Home: Error', error.message);
@@ -204,7 +252,7 @@ export default function HomeScreen() {
         {
           comment_id: commentId,
           user_id: user?.id,
-          reaction_type: 'like',
+          type: 'like',
         },
       ]);
 
@@ -244,6 +292,10 @@ export default function HomeScreen() {
     if (diffHours > 0) return `${diffHours}h ago`;
     if (diffMins > 0) return `${diffMins}m ago`;
     return 'Just now';
+  };
+
+  const getCommentAuthorName = (comment: Comment) => {
+    return comment.author || 'Unknown User';
   };
 
   return (
@@ -302,41 +354,34 @@ export default function HomeScreen() {
               />
             </View>
           ) : (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Select Customer</Text>
-              <View style={styles.pickerContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="All customers"
-                  placeholderTextColor={colors.textSecondary}
-                  value={selectedCustomer}
-                  onChangeText={setSelectedCustomer}
-                />
-              </View>
-            </View>
+            <Dropdown
+              label="Select Customer"
+              placeholder="Select a customer"
+              value={selectedCustomer}
+              options={customers}
+              onValueChange={setSelectedCustomer}
+            />
           )}
 
           <View style={styles.formRow}>
-            <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-              <Text style={styles.label}>Subject</Text>
-              <View style={styles.pickerContainer}>
-                <TextInput
-                  style={styles.input}
-                  value={subject}
-                  onChangeText={setSubject}
-                />
-              </View>
+            <View style={{ flex: 1, marginRight: 8 }}>
+              <Dropdown
+                label="Subject"
+                placeholder="Select subject"
+                value={subject}
+                options={subjectOptions}
+                onValueChange={setSubject}
+              />
             </View>
 
-            <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-              <Text style={styles.label}>Submission Type</Text>
-              <View style={styles.pickerContainer}>
-                <TextInput
-                  style={styles.input}
-                  value={submissionType}
-                  onChangeText={setSubmissionType}
-                />
-              </View>
+            <View style={{ flex: 1, marginLeft: 8 }}>
+              <Dropdown
+                label="Submission Type"
+                placeholder="Select type"
+                value={submissionType}
+                options={submissionTypeOptions}
+                onValueChange={setSubmissionType}
+              />
             </View>
           </View>
 
@@ -415,15 +460,15 @@ export default function HomeScreen() {
                     />
                   </View>
                   <View style={styles.commentInfo}>
-                    <Text style={styles.commentAuthor}>{comment.user_name}</Text>
+                    <Text style={styles.commentAuthor}>{getCommentAuthorName(comment)}</Text>
                     <Text style={styles.commentMeta}>
                       {comment.customer_name} • {comment.submission_type}
                     </Text>
                   </View>
                   <Text style={styles.commentTime}>{getTimeElapsed(comment.created_at)}</Text>
                 </View>
-                <Text style={styles.commentText}>{comment.comment_text}</Text>
-                <View style={styles.commentActions}>
+                <Text style={styles.commentText}>{comment.body}</Text>
+                <View style={styles.commentActionsRow}>
                   <TouchableOpacity
                     style={styles.commentAction}
                     onPress={() => handleLikeComment(comment.id)}
@@ -445,7 +490,7 @@ export default function HomeScreen() {
                     />
                     <Text style={styles.commentActionText}>Reply</Text>
                   </TouchableOpacity>
-                  {comment.user_id === user?.id && (
+                  {comment.author === user?.id && (
                     <TouchableOpacity
                       style={styles.commentAction}
                       onPress={() => handleDeleteComment(comment.id)}
@@ -536,11 +581,12 @@ const styles = StyleSheet.create({
   },
   formRow: {
     flexDirection: 'row',
-    marginBottom: 16,
+    marginBottom: 0,
   },
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 16,
   },
   toggle: {
     width: 50,
@@ -581,12 +627,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 14,
     color: colors.text,
-  },
-  pickerContainer: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
   },
   commentInputContainer: {
     backgroundColor: colors.background,
@@ -674,6 +714,9 @@ const styles = StyleSheet.create({
     color: colors.text,
     lineHeight: 20,
     marginBottom: 8,
+  },
+  commentActionsRow: {
+    flexDirection: 'row',
   },
   commentAction: {
     flexDirection: 'row',
