@@ -351,50 +351,57 @@ export default function DealAnalysisScreen() {
       <View style={styles.formulaTable}>
         <Text style={styles.formulaTableTitle}>Formula Tablet 1:</Text>
         {option.formulaTable1.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.formulaRow}>
-            <View style={styles.formulaPercentage}>
-              <TextInput
-                style={styles.input}
-                placeholder="%"
-                placeholderTextColor={colors.textSecondary}
-                value={row.percentage}
-                onChangeText={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'percentage', value)
-                }
-                keyboardType="numeric"
-              />
+          <View key={rowIndex}>
+            <View style={styles.formulaRowTop}>
+              <View style={styles.formulaPercentageNew}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="%"
+                  placeholderTextColor={colors.textSecondary}
+                  value={row.percentage}
+                  onChangeText={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'percentage', value)
+                  }
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.formulaAdderNew}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Adder"
+                  placeholderTextColor={colors.textSecondary}
+                  value={row.adder}
+                  onChangeText={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'adder', value)
+                  }
+                />
+              </View>
             </View>
-            <View style={styles.formulaPriceSource}>
-              <Dropdown
-                placeholder="ARGUS"
-                value={row.priceSource}
-                options={priceSourceOptions}
-                onValueChange={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'priceSource', value)
-                }
-              />
+            <View style={styles.formulaRowBottom}>
+              <View style={styles.formulaPriceSourceNew}>
+                <Dropdown
+                  placeholder="ARGUS"
+                  value={row.priceSource}
+                  options={priceSourceOptions}
+                  onValueChange={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'priceSource', value)
+                  }
+                />
+              </View>
+              <View style={styles.formulaSourceNew}>
+                <Dropdown
+                  placeholder="Select source first"
+                  value={row.source}
+                  options={sourceOptions}
+                  onValueChange={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'source', value)
+                  }
+                />
+              </View>
             </View>
-            <View style={styles.formulaSource}>
-              <Dropdown
-                placeholder="Select source first"
-                value={row.source}
-                options={sourceOptions}
-                onValueChange={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'source', value)
-                }
-              />
-            </View>
-            <View style={styles.formulaAdder}>
-              <TextInput
-                style={styles.input}
-                placeholder="Adder"
-                placeholderTextColor={colors.textSecondary}
-                value={row.adder}
-                onChangeText={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'adder', value)
-                }
-              />
-            </View>
+            {rowIndex < option.formulaTable1.length - 1 && (
+              <View style={styles.formulaRowSeparator} />
+            )}
           </View>
         ))}
         <View style={styles.formulaFooter}>
@@ -425,50 +432,57 @@ export default function DealAnalysisScreen() {
       <View style={styles.formulaTable}>
         <Text style={styles.formulaTableTitle}>Formula Tablet 2:</Text>
         {option.formulaTable2.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.formulaRow}>
-            <View style={styles.formulaPercentage}>
-              <TextInput
-                style={styles.input}
-                placeholder="%"
-                placeholderTextColor={colors.textSecondary}
-                value={row.percentage}
-                onChangeText={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'percentage', value)
-                }
-                keyboardType="numeric"
-              />
+          <View key={rowIndex}>
+            <View style={styles.formulaRowTop}>
+              <View style={styles.formulaPercentageNew}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="%"
+                  placeholderTextColor={colors.textSecondary}
+                  value={row.percentage}
+                  onChangeText={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'percentage', value)
+                  }
+                  keyboardType="numeric"
+                />
+              </View>
+              <View style={styles.formulaAdderNew}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Adder"
+                  placeholderTextColor={colors.textSecondary}
+                  value={row.adder}
+                  onChangeText={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'adder', value)
+                  }
+                />
+              </View>
             </View>
-            <View style={styles.formulaPriceSource}>
-              <Dropdown
-                placeholder="PLATTS"
-                value={row.priceSource}
-                options={priceSourceOptions}
-                onValueChange={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'priceSource', value)
-                }
-              />
+            <View style={styles.formulaRowBottom}>
+              <View style={styles.formulaPriceSourceNew}>
+                <Dropdown
+                  placeholder="PLATTS"
+                  value={row.priceSource}
+                  options={priceSourceOptions}
+                  onValueChange={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'priceSource', value)
+                  }
+                />
+              </View>
+              <View style={styles.formulaSourceNew}>
+                <Dropdown
+                  placeholder="Select source first"
+                  value={row.source}
+                  options={sourceOptions}
+                  onValueChange={(value) =>
+                    updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'source', value)
+                  }
+                />
+              </View>
             </View>
-            <View style={styles.formulaSource}>
-              <Dropdown
-                placeholder="Select source first"
-                value={row.source}
-                options={sourceOptions}
-                onValueChange={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'source', value)
-                }
-              />
-            </View>
-            <View style={styles.formulaAdder}>
-              <TextInput
-                style={styles.input}
-                placeholder="Adder"
-                placeholderTextColor={colors.textSecondary}
-                value={row.adder}
-                onChangeText={(value) =>
-                  updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'adder', value)
-                }
-              />
-            </View>
+            {rowIndex < option.formulaTable2.length - 1 && (
+              <View style={styles.formulaRowSeparator} />
+            )}
           </View>
         ))}
         <View style={styles.formulaFooter}>
@@ -876,27 +890,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontStyle: 'italic',
   },
-  formulaRow: {
+  formulaRowTop: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    gap: 8,
+  },
+  formulaRowBottom: {
     flexDirection: 'row',
     marginBottom: 12,
     gap: 8,
-    alignItems: 'flex-start',
   },
-  formulaPercentage: {
-    width: 50,
-    minWidth: 50,
-  },
-  formulaPriceSource: {
-    width: 90,
-    minWidth: 90,
-  },
-  formulaSource: {
+  formulaPercentageNew: {
     flex: 1,
-    minWidth: 120,
   },
-  formulaAdder: {
-    width: 70,
-    minWidth: 70,
+  formulaAdderNew: {
+    flex: 1,
+  },
+  formulaPriceSourceNew: {
+    flex: 1,
+  },
+  formulaSourceNew: {
+    flex: 1,
+  },
+  formulaRowSeparator: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 12,
   },
   formulaFooter: {
     marginTop: 8,
