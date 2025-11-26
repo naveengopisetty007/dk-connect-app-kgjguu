@@ -28,6 +28,7 @@ interface OptionData {
 
 interface FormulaRow {
   percentage: string;
+  priceSource: string;
   source: string;
   adder: string;
 }
@@ -58,14 +59,14 @@ export default function DealAnalysisScreen() {
       lowerOn: false,
       rackOn: false,
       formulaTable1: [
-        { percentage: '', source: '', adder: '' },
-        { percentage: '', source: '', adder: '' },
-        { percentage: '', source: '', adder: '' },
+        { percentage: '', priceSource: 'ARGUS', source: '', adder: '' },
+        { percentage: '', priceSource: 'ARGUS', source: '', adder: '' },
+        { percentage: '', priceSource: 'ARGUS', source: '', adder: '' },
       ],
       formulaTable2: [
-        { percentage: '', source: '', adder: '' },
-        { percentage: '', source: '', adder: '' },
-        { percentage: '', source: '', adder: '' },
+        { percentage: '', priceSource: 'PLATTS', source: '', adder: '' },
+        { percentage: '', priceSource: 'PLATTS', source: '', adder: '' },
+        { percentage: '', priceSource: 'PLATTS', source: '', adder: '' },
       ],
       rackFormula: {
         percentage: '',
@@ -99,13 +100,11 @@ export default function DealAnalysisScreen() {
     { label: 'E85', value: 'e85' },
   ];
 
-  const percentageOptions: DropdownOption[] = [
-    { label: '%', value: '%' },
-    { label: '10%', value: '10' },
-    { label: '20%', value: '20' },
-    { label: '30%', value: '30' },
-    { label: '40%', value: '40' },
-    { label: '50%', value: '50' },
+  const priceSourceOptions: DropdownOption[] = [
+    { label: 'ARGUS', value: 'ARGUS' },
+    { label: 'PLATTS', value: 'PLATTS' },
+    { label: 'OPIS', value: 'OPIS' },
+    { label: 'DTN', value: 'DTN' },
   ];
 
   const sourceOptions: DropdownOption[] = [
@@ -271,12 +270,24 @@ export default function DealAnalysisScreen() {
         {option.formulaTable1.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.formulaRow}>
             <View style={styles.formulaPercentage}>
-              <Dropdown
+              <TextInput
+                style={styles.input}
                 placeholder="%"
+                placeholderTextColor={colors.textSecondary}
                 value={row.percentage}
-                options={percentageOptions}
-                onValueChange={(value) =>
+                onChangeText={(value) =>
                   updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'percentage', value)
+                }
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.formulaPriceSource}>
+              <Dropdown
+                placeholder="ARGUS"
+                value={row.priceSource}
+                options={priceSourceOptions}
+                onValueChange={(value) =>
+                  updateFormulaRow(optionIndex, 'formulaTable1', rowIndex, 'priceSource', value)
                 }
               />
             </View>
@@ -333,12 +344,24 @@ export default function DealAnalysisScreen() {
         {option.formulaTable2.map((row, rowIndex) => (
           <View key={rowIndex} style={styles.formulaRow}>
             <View style={styles.formulaPercentage}>
-              <Dropdown
+              <TextInput
+                style={styles.input}
                 placeholder="%"
+                placeholderTextColor={colors.textSecondary}
                 value={row.percentage}
-                options={percentageOptions}
-                onValueChange={(value) =>
+                onChangeText={(value) =>
                   updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'percentage', value)
+                }
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={styles.formulaPriceSource}>
+              <Dropdown
+                placeholder="PLATTS"
+                value={row.priceSource}
+                options={priceSourceOptions}
+                onValueChange={(value) =>
+                  updateFormulaRow(optionIndex, 'formulaTable2', rowIndex, 'priceSource', value)
                 }
               />
             </View>
@@ -782,13 +805,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   formulaPercentage: {
-    flex: 0.8,
+    flex: 0.6,
+  },
+  formulaPriceSource: {
+    flex: 1,
   },
   formulaSource: {
-    flex: 2,
+    flex: 1.8,
   },
   formulaAdder: {
-    flex: 1.2,
+    flex: 1,
   },
   formulaFooter: {
     marginTop: 8,
