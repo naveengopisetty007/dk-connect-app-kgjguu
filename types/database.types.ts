@@ -48,3 +48,15 @@ export interface Profile {
   created_at: string;
   updated_at: string;
 }
+
+export interface EconomicData {
+  id: string;
+  customer_name: string;
+  product: string;
+  bpd: number;
+  sale_diff: number;
+  netback: number;
+  netback_tp: number;
+  created_at: string;
+  updated_at: string;
+}

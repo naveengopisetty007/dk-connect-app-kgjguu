@@ -11,6 +11,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import Dropdown, { DropdownOption } from '@/components/Dropdown';
@@ -30,6 +31,7 @@ interface DashboardCard {
 
 export default function HomeScreen() {
   const { user } = useAuth();
+  const router = useRouter();
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [newCustomerName, setNewCustomerName] = useState('');
@@ -298,11 +300,23 @@ export default function HomeScreen() {
     return comment.author || 'Unknown User';
   };
 
+  const handleCardPress = (cardTitle: string) => {
+    console.log('Home: Card pressed', cardTitle);
+    if (cardTitle === 'Economic Info') {
+      router.push('/(app)/(drawer)/economic-summary');
+    }
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.cardsGrid}>
         {dashboardCards.map((card, index) => (
-          <View key={index} style={[styles.card, { backgroundColor: card.color }]}>
+          <TouchableOpacity
+            key={index}
+            style={[styles.card, { backgroundColor: card.color }]}
+            onPress={() => handleCardPress(card.title)}
+            activeOpacity={0.7}
+          >
             <View style={styles.cardHeader}>
               <IconSymbol
                 ios_icon_name={card.icon}
@@ -314,7 +328,7 @@ export default function HomeScreen() {
             <Text style={styles.cardValue}>{card.value}</Text>
             <Text style={styles.cardTitle}>{card.title}</Text>
             <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
 
