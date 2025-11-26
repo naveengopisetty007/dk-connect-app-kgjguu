@@ -145,10 +145,39 @@ export default function CustomerProfileScreen() {
         value: name,
       }));
 
+      // Add sample customers if the list is empty or has fewer than 3 customers
+      if (customerOptions.length < 3) {
+        const sampleCustomers: DropdownOption[] = [
+          { label: 'Acme Corporation', value: 'Acme Corporation' },
+          { label: 'Global Energy Solutions', value: 'Global Energy Solutions' },
+          { label: 'Midwest Petroleum', value: 'Midwest Petroleum' },
+          { label: 'Pacific Oil & Gas', value: 'Pacific Oil & Gas' },
+          { label: 'Atlantic Resources', value: 'Atlantic Resources' },
+        ];
+
+        // Merge existing customers with sample customers, avoiding duplicates
+        const existingValues = new Set(customerOptions.map(c => c.value));
+        const uniqueSampleCustomers = sampleCustomers.filter(
+          sample => !existingValues.has(sample.value)
+        );
+
+        customerOptions.push(...uniqueSampleCustomers);
+      }
+
       console.log('CustomerProfile: Customers fetched', customerOptions.length);
       setCustomers(customerOptions);
     } catch (error: any) {
       console.log('CustomerProfile: Error fetching customers', error.message);
+      
+      // If there's an error, still provide sample customers
+      const sampleCustomers: DropdownOption[] = [
+        { label: 'Acme Corporation', value: 'Acme Corporation' },
+        { label: 'Global Energy Solutions', value: 'Global Energy Solutions' },
+        { label: 'Midwest Petroleum', value: 'Midwest Petroleum' },
+        { label: 'Pacific Oil & Gas', value: 'Pacific Oil & Gas' },
+        { label: 'Atlantic Resources', value: 'Atlantic Resources' },
+      ];
+      setCustomers(sampleCustomers);
     }
   };
 
