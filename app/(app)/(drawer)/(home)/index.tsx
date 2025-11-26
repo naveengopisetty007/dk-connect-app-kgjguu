@@ -304,6 +304,10 @@ export default function HomeScreen() {
     console.log('Home: Card pressed', cardTitle);
     if (cardTitle === 'Economic Info') {
       router.push('/(app)/(drawer)/economic-summary');
+    } else if (cardTitle === 'Expiring Contracts') {
+      router.push('/(app)/(drawer)/expiring-contracts');
+    } else if (cardTitle === 'Allocation') {
+      router.push('/(app)/(drawer)/customer-allocations');
     }
   };
 
