@@ -58,6 +58,8 @@ export default function Dropdown({
             styles.dropdownText,
             !selectedOption && styles.placeholderText,
           ]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
         >
           {displayText}
         </Text>
@@ -151,6 +153,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 42,
   },
   dropdownButtonDisabled: {
     opacity: 0.5,
@@ -159,6 +162,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     flex: 1,
+    marginRight: 8,
   },
   placeholderText: {
     color: colors.textSecondary,

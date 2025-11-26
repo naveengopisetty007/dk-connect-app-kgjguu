@@ -50,6 +50,7 @@ export default function DealAnalysisScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showDateModal, setShowDateModal] = useState(false);
+  const [datePickerMode, setDatePickerMode] = useState<'start' | 'end'>('start');
 
   const [options, setOptions] = useState<OptionData[]>(
     Array(6).fill(null).map(() => ({
@@ -185,6 +186,49 @@ export default function DealAnalysisScreen() {
     });
   };
 
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    console.log('Date picker event:', event.type, selectedDate);
+    
+    if (Platform.OS === 'android') {
+      setShowStartPicker(false);
+      setShowEndPicker(false);
+    }
+
+    if (event.type === 'dismissed') {
+      setShowStartPicker(false);
+      setShowEndPicker(false);
+      return;
+    }
+
+    if (selectedDate) {
+      if (datePickerMode === 'start') {
+        setStartDate(selectedDate);
+        if (Platform.OS === 'ios') {
+          setShowStartPicker(false);
+          setTimeout(() => {
+            setDatePickerMode('end');
+            setShowEndPicker(true);
+          }, 300);
+        }
+      } else {
+        setEndDate(selectedDate);
+        if (Platform.OS === 'ios') {
+          setShowEndPicker(false);
+        }
+      }
+    }
+  };
+
+  const openDatePicker = () => {
+    console.log('Opening date picker, Platform:', Platform.OS);
+    if (Platform.OS === 'web') {
+      setShowDateModal(true);
+    } else {
+      setDatePickerMode('start');
+      setShowStartPicker(true);
+    }
+  };
+
   const renderDatePicker = () => {
     if (Platform.OS === 'web') {
       return (
@@ -234,30 +278,69 @@ export default function DealAnalysisScreen() {
     return (
       <>
         {showStartPicker && (
-          <DateTimePicker
-            value={startDate}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowStartPicker(false);
-              if (selectedDate) {
-                setStartDate(selectedDate);
-              }
-            }}
-          />
+          <Modal
+            visible={showStartPicker}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowStartPicker(false)}
+          >
+            <View style={styles.datePickerModalOverlay}>
+              <View style={styles.datePickerContainer}>
+                <View style={styles.datePickerHeader}>
+                  <Text style={styles.datePickerTitle}>Select Start Date</Text>
+                  <TouchableOpacity
+                    style={styles.datePickerDoneButton}
+                    onPress={() => {
+                      setShowStartPicker(false);
+                      setTimeout(() => {
+                        setDatePickerMode('end');
+                        setShowEndPicker(true);
+                      }, 300);
+                    }}
+                  >
+                    <Text style={styles.datePickerDoneText}>Next</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={startDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleDateChange}
+                  style={styles.datePicker}
+                />
+              </View>
+            </View>
+          </Modal>
         )}
         {showEndPicker && (
-          <DateTimePicker
-            value={endDate}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowEndPicker(false);
-              if (selectedDate) {
-                setEndDate(selectedDate);
-              }
-            }}
-          />
+          <Modal
+            visible={showEndPicker}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowEndPicker(false)}
+          >
+            <View style={styles.datePickerModalOverlay}>
+              <View style={styles.datePickerContainer}>
+                <View style={styles.datePickerHeader}>
+                  <Text style={styles.datePickerTitle}>Select End Date</Text>
+                  <TouchableOpacity
+                    style={styles.datePickerDoneButton}
+                    onPress={() => setShowEndPicker(false)}
+                  >
+                    <Text style={styles.datePickerDoneText}>Done</Text>
+                  </TouchableOpacity>
+                </View>
+                <DateTimePicker
+                  value={endDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleDateChange}
+                  style={styles.datePicker}
+                  minimumDate={startDate}
+                />
+              </View>
+            </View>
+          </Modal>
         )}
       </>
     );
@@ -596,13 +679,7 @@ export default function DealAnalysisScreen() {
             <Text style={styles.label}>Date Range</Text>
             <TouchableOpacity
               style={styles.dateRangeButton}
-              onPress={() => {
-                if (Platform.OS === 'web') {
-                  setShowDateModal(true);
-                } else {
-                  setShowStartPicker(true);
-                }
-              }}
+              onPress={openDatePicker}
             >
               <IconSymbol
                 ios_icon_name="calendar"
@@ -803,18 +880,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginBottom: 12,
     gap: 8,
+    alignItems: 'flex-start',
   },
   formulaPercentage: {
-    flex: 0.6,
+    width: 50,
+    minWidth: 50,
   },
   formulaPriceSource: {
-    flex: 1,
+    width: 90,
+    minWidth: 90,
   },
   formulaSource: {
-    flex: 1.8,
+    flex: 1,
+    minWidth: 120,
   },
   formulaAdder: {
-    flex: 1,
+    width: 70,
+    minWidth: 70,
   },
   formulaFooter: {
     marginTop: 8,
@@ -919,5 +1001,45 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  datePickerModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  datePickerContainer: {
+    backgroundColor: colors.card,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  datePickerDoneButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+  },
+  datePickerDoneText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.white,
+  },
+  datePicker: {
+    width: '100%',
+    height: 260,
   },
 });
