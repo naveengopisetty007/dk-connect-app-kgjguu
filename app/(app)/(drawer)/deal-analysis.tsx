@@ -664,92 +664,75 @@ export default function DealAnalysisScreen() {
             <Text style={styles.sectionTitle}>Showing {deals.length} deals</Text>
           </View>
 
-          {deals.map((deal, index) => (
-            <View key={index} style={styles.dealCard}>
-              <View style={styles.dealCardHeader}>
-                <Text style={styles.dealCustomerName}>{deal.customerName}</Text>
-                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(deal.status) }]}>
-                  <Text style={styles.statusText}>{deal.status}</Text>
-                </View>
-              </View>
-
-              <Text style={styles.dealDateRange}>{deal.dateRange}</Text>
-
-              <View style={styles.dealInfoSection}>
-                <View style={styles.dealInfoRow}>
-                  <Text style={styles.dealInfoLabel}>PRODUCT</Text>
-                  <Text style={styles.dealInfoValue}>{deal.product}</Text>
+          <View style={styles.tableContainer}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+              <View style={styles.table}>
+                <View style={styles.tableHeader}>
+                  <Text style={[styles.tableHeaderCell, styles.customerColumn]}>Customer</Text>
+                  <Text style={[styles.tableHeaderCell, styles.dateRangeColumn]}>Date Range</Text>
+                  <Text style={[styles.tableHeaderCell, styles.productColumn]}>Product</Text>
+                  <Text style={[styles.tableHeaderCell, styles.locationColumn]}>Location</Text>
+                  <Text style={[styles.tableHeaderCell, styles.dealTypeColumn]}>Deal Type</Text>
+                  <Text style={[styles.tableHeaderCell, styles.submittedByColumn]}>Submitted By</Text>
+                  <Text style={[styles.tableHeaderCell, styles.submittedDateColumn]}>Submitted Date</Text>
+                  <Text style={[styles.tableHeaderCell, styles.statusColumn]}>Status</Text>
+                  <Text style={[styles.tableHeaderCell, styles.actionsColumn]}>Actions</Text>
                 </View>
 
-                <View style={styles.dealInfoRow}>
-                  <Text style={styles.dealInfoLabel}>LOCATION</Text>
-                  <Text style={styles.dealInfoValue}>{deal.location}</Text>
-                </View>
+                {deals.map((deal, index) => (
+                  <View key={index} style={[styles.tableRow, index % 2 === 0 && styles.tableRowEven]}>
+                    <Text style={[styles.tableCell, styles.customerColumn]}>{deal.customerName}</Text>
+                    <Text style={[styles.tableCell, styles.dateRangeColumn]}>{deal.dateRange}</Text>
+                    <Text style={[styles.tableCell, styles.productColumn]}>{deal.product}</Text>
+                    <Text style={[styles.tableCell, styles.locationColumn]}>{deal.location}</Text>
+                    <Text style={[styles.tableCell, styles.dealTypeColumn]} numberOfLines={2}>
+                      {deal.dealType}
+                    </Text>
+                    <Text style={[styles.tableCell, styles.submittedByColumn]}>{deal.submittedBy}</Text>
+                    <Text style={[styles.tableCell, styles.submittedDateColumn]}>{deal.submittedDate}</Text>
+                    <Text style={[styles.tableCell, styles.statusColumn, { color: getStatusColor(deal.status) }]}>
+                      {deal.status}
+                    </Text>
+                    <View style={[styles.tableCell, styles.actionsColumn, styles.actionsContainer]}>
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => handleEditDeal(deal.id)}
+                      >
+                        <IconSymbol
+                          ios_icon_name="pencil"
+                          android_material_icon_name="edit"
+                          size={18}
+                          color={colors.textSecondary}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => handleViewDeal(deal.id)}
+                      >
+                        <IconSymbol
+                          ios_icon_name="eye"
+                          android_material_icon_name="visibility"
+                          size={18}
+                          color={colors.textSecondary}
+                        />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.actionButton}
+                        onPress={() => handleDeleteDeal(deal.id)}
+                      >
+                        <IconSymbol
+                          ios_icon_name="trash"
+                          android_material_icon_name="delete"
+                          size={18}
+                          color={colors.secondary}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ))}
               </View>
-
-              <View style={styles.dealTypeSection}>
-                <TouchableOpacity style={styles.hideDetailsButton}>
-                  <IconSymbol
-                    ios_icon_name="chevron.up"
-                    android_material_icon_name="expand_less"
-                    size={16}
-                    color={colors.primary}
-                  />
-                  <Text style={styles.hideDetailsText}>Hide Details</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.dealDetailsSection}>
-                <View style={styles.dealDetailRow}>
-                  <Text style={styles.dealDetailLabel}>DEAL TYPE</Text>
-                  <Text style={styles.dealDetailValue}>{deal.dealType}</Text>
-                </View>
-
-                <View style={styles.dealDetailRow}>
-                  <Text style={styles.dealDetailLabel}>SUBMISSION</Text>
-                  <Text style={styles.dealDetailValue}>
-                    {deal.submittedBy} - {deal.submittedDate}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.dealActions}>
-                <TouchableOpacity
-                  style={styles.dealActionButton}
-                  onPress={() => handleEditDeal(deal.id)}
-                >
-                  <IconSymbol
-                    ios_icon_name="pencil"
-                    android_material_icon_name="edit"
-                    size={18}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dealActionButton}
-                  onPress={() => handleViewDeal(deal.id)}
-                >
-                  <IconSymbol
-                    ios_icon_name="eye"
-                    android_material_icon_name="visibility"
-                    size={18}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.dealActionButton}
-                  onPress={() => handleDeleteDeal(deal.id)}
-                >
-                  <IconSymbol
-                    ios_icon_name="trash"
-                    android_material_icon_name="delete"
-                    size={18}
-                    color={colors.secondary}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))}
+            </ScrollView>
+          </View>
         </View>
 
         <View style={styles.optionsContainer}>
@@ -895,106 +878,80 @@ const styles = StyleSheet.create({
   dealsSectionHeader: {
     marginBottom: 16,
   },
-  dealCard: {
+  tableContainer: {
     backgroundColor: colors.card,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
     boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
     elevation: 3,
   },
-  dealCardHeader: {
+  table: {
+    minWidth: Platform.OS === 'web' ? 1600 : 1400,
+  },
+  tableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  dealCustomerName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    flex: 1,
-    marginRight: 12,
-  },
-  statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  dealDateRange: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 16,
-  },
-  dealInfoSection: {
-    marginBottom: 12,
-  },
-  dealInfoRow: {
-    marginBottom: 8,
-  },
-  dealInfoLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  dealInfoValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  dealTypeSection: {
+    backgroundColor: colors.background,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.border,
     paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    paddingHorizontal: 8,
+  },
+  tableHeaderCell: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.text,
+    paddingHorizontal: 8,
+  },
+  tableRow: {
+    flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    marginBottom: 12,
-  },
-  hideDetailsButton: {
-    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
     alignItems: 'center',
   },
-  hideDetailsText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-    marginLeft: 4,
+  tableRowEven: {
+    backgroundColor: colors.background,
   },
-  dealDetailsSection: {
-    marginBottom: 16,
-  },
-  dealDetailRow: {
-    marginBottom: 12,
-  },
-  dealDetailLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  dealDetailValue: {
+  tableCell: {
     fontSize: 13,
     color: colors.text,
-    lineHeight: 18,
+    paddingHorizontal: 8,
   },
-  dealActions: {
+  customerColumn: {
+    width: 180,
+  },
+  dateRangeColumn: {
+    width: 180,
+  },
+  productColumn: {
+    width: 120,
+  },
+  locationColumn: {
+    width: 120,
+  },
+  dealTypeColumn: {
+    width: 300,
+  },
+  submittedByColumn: {
+    width: 180,
+  },
+  submittedDateColumn: {
+    width: 120,
+  },
+  statusColumn: {
+    width: 140,
+  },
+  actionsColumn: {
+    width: 120,
+  },
+  actionsContainer: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+    gap: 8,
+    alignItems: 'center',
   },
-  dealActionButton: {
-    padding: 8,
-    marginLeft: 12,
+  actionButton: {
+    padding: 4,
   },
   optionsContainer: {
     marginBottom: 24,
