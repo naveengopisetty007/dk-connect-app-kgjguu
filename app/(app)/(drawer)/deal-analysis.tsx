@@ -8,12 +8,11 @@ import {
   Platform,
   TouchableOpacity,
   TextInput,
-  Modal,
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import Dropdown, { DropdownOption } from '@/components/Dropdown';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateRangePicker from '@/components/DateRangePicker';
 
 interface OptionData {
   location: string;
@@ -45,12 +44,9 @@ export default function DealAnalysisScreen() {
   const [isNewCustomer, setIsNewCustomer] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [newCustomerName, setNewCustomerName] = useState('');
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
-  const [showDateModal, setShowDateModal] = useState(false);
-  const [datePickerMode, setDatePickerMode] = useState<'start' | 'end'>('start');
+  const [startDate, setStartDate] = useState<Date | null>(new Date());
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [options, setOptions] = useState<OptionData[]>(
     Array(6).fill(null).map(() => ({
@@ -170,12 +166,18 @@ export default function DealAnalysisScreen() {
     setOptions(newOptions);
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | null) => {
+    if (!date) return '';
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
+  };
+
+  const formatDateRange = () => {
+    if (!startDate || !endDate) return 'Select date range';
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   };
 
   const handleSaveAnalysis = () => {
@@ -186,164 +188,10 @@ export default function DealAnalysisScreen() {
     });
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    console.log('Date picker event:', event.type, selectedDate);
-    
-    if (Platform.OS === 'android') {
-      setShowStartPicker(false);
-      setShowEndPicker(false);
-    }
-
-    if (event.type === 'dismissed') {
-      setShowStartPicker(false);
-      setShowEndPicker(false);
-      return;
-    }
-
-    if (selectedDate) {
-      if (datePickerMode === 'start') {
-        setStartDate(selectedDate);
-        if (Platform.OS === 'ios') {
-          setShowStartPicker(false);
-          setTimeout(() => {
-            setDatePickerMode('end');
-            setShowEndPicker(true);
-          }, 300);
-        }
-      } else {
-        setEndDate(selectedDate);
-        if (Platform.OS === 'ios') {
-          setShowEndPicker(false);
-        }
-      }
-    }
-  };
-
-  const openDatePicker = () => {
-    console.log('Opening date picker, Platform:', Platform.OS);
-    if (Platform.OS === 'web') {
-      setShowDateModal(true);
-    } else {
-      setDatePickerMode('start');
-      setShowStartPicker(true);
-    }
-  };
-
-  const renderDatePicker = () => {
-    if (Platform.OS === 'web') {
-      return (
-        <Modal
-          visible={showDateModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowDateModal(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowDateModal(false)}
-          >
-            <View style={styles.dateModalContent}>
-              <Text style={styles.dateModalTitle}>Select Date Range</Text>
-              <View style={styles.dateInputsContainer}>
-                <View style={styles.dateInputGroup}>
-                  <Text style={styles.label}>Start Date</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formatDate(startDate)}
-                    editable={false}
-                  />
-                </View>
-                <View style={styles.dateInputGroup}>
-                  <Text style={styles.label}>End Date</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formatDate(endDate)}
-                    editable={false}
-                  />
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.dateModalButton}
-                onPress={() => setShowDateModal(false)}
-              >
-                <Text style={styles.dateModalButtonText}>Done</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      );
-    }
-
-    return (
-      <>
-        {showStartPicker && (
-          <Modal
-            visible={showStartPicker}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setShowStartPicker(false)}
-          >
-            <View style={styles.datePickerModalOverlay}>
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select Start Date</Text>
-                  <TouchableOpacity
-                    style={styles.datePickerDoneButton}
-                    onPress={() => {
-                      setShowStartPicker(false);
-                      setTimeout(() => {
-                        setDatePickerMode('end');
-                        setShowEndPicker(true);
-                      }, 300);
-                    }}
-                  >
-                    <Text style={styles.datePickerDoneText}>Next</Text>
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={startDate}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={handleDateChange}
-                  style={styles.datePicker}
-                />
-              </View>
-            </View>
-          </Modal>
-        )}
-        {showEndPicker && (
-          <Modal
-            visible={showEndPicker}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setShowEndPicker(false)}
-          >
-            <View style={styles.datePickerModalOverlay}>
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select End Date</Text>
-                  <TouchableOpacity
-                    style={styles.datePickerDoneButton}
-                    onPress={() => setShowEndPicker(false)}
-                  >
-                    <Text style={styles.datePickerDoneText}>Done</Text>
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={endDate}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={handleDateChange}
-                  style={styles.datePicker}
-                  minimumDate={startDate}
-                />
-              </View>
-            </View>
-          </Modal>
-        )}
-      </>
-    );
+  const handleDateRangeChange = (newStartDate: Date | null, newEndDate: Date | null) => {
+    console.log('Date range changed:', newStartDate, newEndDate);
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
   };
 
   const renderFormulaTable1 = (optionIndex: number, option: OptionData) => {
@@ -693,7 +541,7 @@ export default function DealAnalysisScreen() {
             <Text style={styles.label}>Date Range</Text>
             <TouchableOpacity
               style={styles.dateRangeButton}
-              onPress={openDatePicker}
+              onPress={() => setShowDatePicker(true)}
             >
               <IconSymbol
                 ios_icon_name="calendar"
@@ -702,7 +550,7 @@ export default function DealAnalysisScreen() {
                 color={colors.textSecondary}
               />
               <Text style={styles.dateRangeText}>
-                {formatDate(startDate)} - {formatDate(endDate)}
+                {formatDateRange()}
               </Text>
             </TouchableOpacity>
           </View>
@@ -722,7 +570,13 @@ export default function DealAnalysisScreen() {
         </TouchableOpacity>
       </View>
 
-      {renderDatePicker()}
+      <DateRangePicker
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        startDate={startDate}
+        endDate={endDate}
+        onDateRangeChange={handleDateRangeChange}
+      />
     </ScrollView>
   );
 }
@@ -981,84 +835,5 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 16,
     fontWeight: '600',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  dateModalContent: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.2)',
-    elevation: 5,
-  },
-  dateModalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 16,
-  },
-  dateInputsContainer: {
-    marginBottom: 16,
-  },
-  dateInputGroup: {
-    marginBottom: 12,
-  },
-  dateModalButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  dateModalButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  datePickerModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  datePickerContainer: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  datePickerDoneButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  datePickerDoneText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  datePicker: {
-    width: '100%',
-    height: 260,
   },
 });
