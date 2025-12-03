@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Platform,
   ScrollView,
+  Dimensions,
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -35,6 +36,10 @@ const MONTHS = [
   'November',
   'December',
 ];
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const isTablet = SCREEN_WIDTH >= 768;
+const isWeb = Platform.OS === 'web';
 
 export default function DateRangePicker({
   visible,
@@ -80,11 +85,11 @@ export default function DateRangePicker({
     return days;
   };
 
-  const leftMonthDays = useMemo(() => {
+  const currentMonthDays = useMemo(() => {
     return generateCalendarDays(currentMonth);
   }, [currentMonth]);
 
-  const rightMonthDays = useMemo(() => {
+  const nextMonthDays = useMemo(() => {
     const nextMonth = new Date(currentMonth);
     nextMonth.setMonth(nextMonth.getMonth() + 1);
     return generateCalendarDays(nextMonth);
@@ -152,6 +157,19 @@ export default function DateRangePicker({
     onClose();
   };
 
+  const formatDateRange = () => {
+    if (!tempStartDate || !tempEndDate) return 'Select dates';
+    
+    const formatDate = (date: Date) => {
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    };
+
+    return `${formatDate(tempStartDate)} - ${formatDate(tempEndDate)}`;
+  };
+
   const renderCalendar = (days: (Date | null)[], monthOffset: number = 0) => {
     const displayMonth = new Date(currentMonth);
     displayMonth.setMonth(displayMonth.getMonth() + monthOffset);
@@ -159,35 +177,37 @@ export default function DateRangePicker({
     return (
       <View style={styles.calendar}>
         <View style={styles.calendarHeader}>
-          {monthOffset === 0 && (
-            <TouchableOpacity
-              style={styles.monthNavButton}
-              onPress={handlePreviousMonth}
-            >
+          <TouchableOpacity
+            style={styles.monthNavButton}
+            onPress={handlePreviousMonth}
+            disabled={monthOffset !== 0}
+          >
+            {monthOffset === 0 && (
               <IconSymbol
                 ios_icon_name="chevron.left"
                 android_material_icon_name="chevron_left"
-                size={20}
+                size={24}
                 color={colors.text}
               />
-            </TouchableOpacity>
-          )}
+            )}
+          </TouchableOpacity>
           <Text style={styles.monthTitle}>
             {MONTHS[displayMonth.getMonth()]} {displayMonth.getFullYear()}
           </Text>
-          {monthOffset === 1 && (
-            <TouchableOpacity
-              style={styles.monthNavButton}
-              onPress={handleNextMonth}
-            >
+          <TouchableOpacity
+            style={styles.monthNavButton}
+            onPress={handleNextMonth}
+            disabled={monthOffset === 0}
+          >
+            {monthOffset === 1 && (
               <IconSymbol
                 ios_icon_name="chevron.right"
                 android_material_icon_name="chevron_right"
-                size={20}
+                size={24}
                 color={colors.text}
               />
-            </TouchableOpacity>
-          )}
+            )}
+          </TouchableOpacity>
         </View>
 
         <View style={styles.daysOfWeekContainer}>
@@ -203,8 +223,7 @@ export default function DateRangePicker({
             const isStart = isStartDate(date);
             const isEnd = isEndDate(date);
             const inRange = isInRange(date);
-            const isToday =
-              date && isSameDay(date, new Date());
+            const isToday = date && isSameDay(date, new Date());
 
             return (
               <TouchableOpacity
@@ -213,9 +232,6 @@ export default function DateRangePicker({
                   styles.dayCell,
                   !date && styles.dayCellEmpty,
                   inRange && styles.dayCellInRange,
-                  (isStart || isEnd) && styles.dayCellSelected,
-                  isStart && styles.dayCellStart,
-                  isEnd && styles.dayCellEnd,
                 ]}
                 onPress={() => date && handleDatePress(date)}
                 disabled={!date}
@@ -231,7 +247,6 @@ export default function DateRangePicker({
                     <Text
                       style={[
                         styles.dayText,
-                        !date && styles.dayTextEmpty,
                         (isStart || isEnd) && styles.dayTextSelected,
                         isToday && !isStart && !isEnd && styles.dayTextToday,
                       ]}
@@ -247,6 +262,8 @@ export default function DateRangePicker({
       </View>
     );
   };
+
+  const shouldShowHorizontal = isWeb && SCREEN_WIDTH >= 1024;
 
   return (
     <Modal
@@ -264,37 +281,42 @@ export default function DateRangePicker({
           activeOpacity={1}
           onPress={(e) => e.stopPropagation()}
         >
-          <View style={styles.modalContent}>
+          <View style={[
+            styles.modalContent,
+            shouldShowHorizontal && styles.modalContentHorizontal,
+          ]}>
             <View style={styles.header}>
-              <View style={styles.headerLeft}>
+              <Text style={styles.headerTitle}>Date Range</Text>
+              <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
                 <IconSymbol
-                  ios_icon_name="calendar"
-                  android_material_icon_name="calendar_today"
-                  size={24}
-                  color={colors.primary}
-                />
-                <Text style={styles.headerTitle}>Pick a date range</Text>
-              </View>
-              <TouchableOpacity onPress={handleCancel}>
-                <IconSymbol
-                  ios_icon_name="xmark.circle.fill"
-                  android_material_icon_name="cancel"
+                  ios_icon_name="xmark"
+                  android_material_icon_name="close"
                   size={24}
                   color={colors.textSecondary}
                 />
               </TouchableOpacity>
             </View>
 
+            <View style={styles.selectedDateContainer}>
+              <IconSymbol
+                ios_icon_name="calendar"
+                android_material_icon_name="calendar_today"
+                size={20}
+                color={colors.primary}
+              />
+              <Text style={styles.selectedDateText}>{formatDateRange()}</Text>
+            </View>
+
             <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.calendarsContainer}
+              style={styles.calendarsScrollView}
+              contentContainerStyle={[
+                styles.calendarsContainer,
+                shouldShowHorizontal && styles.calendarsContainerHorizontal,
+              ]}
+              showsVerticalScrollIndicator={false}
             >
-              {renderCalendar(leftMonthDays, 0)}
-              {Platform.OS === 'web' && (
-                <View style={styles.calendarSeparator} />
-              )}
-              {renderCalendar(rightMonthDays, 1)}
+              {renderCalendar(currentMonthDays, 0)}
+              {renderCalendar(nextMonthDays, 1)}
             </ScrollView>
 
             <View style={styles.footer}>
@@ -328,15 +350,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: isWeb ? 20 : 16,
   },
   modalContent: {
     backgroundColor: colors.card,
     borderRadius: 16,
-    width: Platform.OS === 'web' ? 'auto' : '100%',
-    maxWidth: Platform.OS === 'web' ? 720 : 400,
+    width: '100%',
+    maxWidth: isTablet ? 500 : 380,
+    maxHeight: '90%',
     boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15)',
     elevation: 8,
+  },
+  modalContentHorizontal: {
+    maxWidth: 720,
   },
   header: {
     flexDirection: 'row',
@@ -347,43 +373,58 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '600',
     color: colors.text,
   },
-  calendarsContainer: {
-    flexDirection: 'row',
-    padding: 20,
-    gap: Platform.OS === 'web' ? 20 : 0,
+  closeButton: {
+    padding: 4,
   },
-  calendarSeparator: {
-    width: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: 10,
+  selectedDateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    gap: 12,
+  },
+  selectedDateText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  calendarsScrollView: {
+    maxHeight: 600,
+  },
+  calendarsContainer: {
+    padding: 16,
+  },
+  calendarsContainerHorizontal: {
+    flexDirection: 'row',
+    gap: 20,
   },
   calendar: {
-    width: Platform.OS === 'web' ? 320 : '100%',
+    marginBottom: 20,
   },
   calendarHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 16,
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
   },
   monthNavButton: {
     padding: 8,
     borderRadius: 8,
-    backgroundColor: colors.background,
+    minWidth: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   monthTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: colors.text,
     flex: 1,
@@ -399,7 +440,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   dayOfWeekText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: colors.textSecondary,
   },
@@ -420,38 +461,24 @@ const styles = StyleSheet.create({
   dayCellInRange: {
     backgroundColor: '#E3F2FD',
   },
-  dayCellSelected: {
-    backgroundColor: 'transparent',
-  },
-  dayCellStart: {
-    borderTopLeftRadius: 24,
-    borderBottomLeftRadius: 24,
-  },
-  dayCellEnd: {
-    borderTopRightRadius: 24,
-    borderBottomRightRadius: 24,
-  },
   dayContent: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayContentToday: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.primary,
   },
   dayContentSelected: {
     backgroundColor: colors.primary,
   },
   dayText: {
-    fontSize: 14,
+    fontSize: 15,
     color: colors.text,
     fontWeight: '500',
-  },
-  dayTextEmpty: {
-    color: colors.textSecondary,
   },
   dayTextSelected: {
     color: colors.white,
@@ -472,19 +499,21 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
   },
   cancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
     backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   cancelButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.text,
   },
   applyButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
     backgroundColor: colors.primary,
   },
@@ -492,7 +521,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   applyButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.white,
   },
