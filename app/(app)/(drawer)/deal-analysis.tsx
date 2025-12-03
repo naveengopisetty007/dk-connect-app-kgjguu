@@ -8,6 +8,7 @@ import {
   Platform,
   TouchableOpacity,
   TextInput,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
@@ -38,6 +39,18 @@ interface RackFormulaData {
   postingType: string;
   postingLocation: string;
   adder: string;
+}
+
+interface DealData {
+  id: string;
+  customerName: string;
+  dateRange: string;
+  product: string;
+  location: string;
+  dealType: string;
+  submittedBy: string;
+  submittedDate: string;
+  status: 'Awaiting Approval' | 'Approved' | 'Rejected';
 }
 
 export default function DealAnalysisScreen() {
@@ -74,6 +87,65 @@ export default function DealAnalysisScreen() {
       },
     }))
   );
+
+  // Sample deal data
+  const [deals] = useState<DealData[]>([
+    {
+      id: '1',
+      customerName: 'Mccraw Oil Company, Inc',
+      dateRange: '12/02/2024 - 12/02/2025',
+      product: '86 Conv E10',
+      location: 'Abilene, TX',
+      dealType: '3%(DKL U8 RACK POSTING - 87 CONV E10 ABILENE, TX - DKL + 3) +1',
+      submittedBy: 'Surya sudhaker Gogada',
+      submittedDate: '12/02/2025',
+      status: 'Awaiting Approval',
+    },
+    {
+      id: '2',
+      customerName: 'Global Energy Solutions',
+      dateRange: '01/15/2024 - 01/15/2025',
+      product: '87 Conv E10',
+      location: 'Houston, TX',
+      dealType: '2%(DKL U8 RACK POSTING - 87 CONV E10 HOUSTON, TX - DKL + 2) +0.5',
+      submittedBy: 'John Smith',
+      submittedDate: '01/10/2025',
+      status: 'Approved',
+    },
+    {
+      id: '3',
+      customerName: 'Midwest Petroleum',
+      dateRange: '03/01/2024 - 03/01/2025',
+      product: 'Diesel',
+      location: 'Dallas, TX',
+      dealType: '4%(DKL U8 RACK POSTING - DIESEL DALLAS, TX - DKL + 4) +2',
+      submittedBy: 'Jane Doe',
+      submittedDate: '02/28/2025',
+      status: 'Awaiting Approval',
+    },
+    {
+      id: '4',
+      customerName: 'Pacific Oil & Gas',
+      dateRange: '04/10/2024 - 04/10/2025',
+      product: '91 Premium',
+      location: 'Austin, TX',
+      dealType: '5%(DKL U8 RACK POSTING - 91 PREMIUM AUSTIN, TX - DKL + 5) +1.5',
+      submittedBy: 'Mike Johnson',
+      submittedDate: '04/05/2025',
+      status: 'Rejected',
+    },
+    {
+      id: '5',
+      customerName: 'Atlantic Resources',
+      dateRange: '05/20/2024 - 05/20/2025',
+      product: '86 Conv E10',
+      location: 'San Antonio, TX',
+      dealType: '3%(DKL U8 RACK POSTING - 86 CONV E10 SAN ANTONIO, TX - DKL + 3) +1',
+      submittedBy: 'Sarah Williams',
+      submittedDate: '05/15/2025',
+      status: 'Awaiting Approval',
+    },
+  ]);
 
   const customerOptions: DropdownOption[] = [
     { label: 'Acme Corporation', value: 'acme' },
@@ -192,6 +264,31 @@ export default function DealAnalysisScreen() {
     console.log('Date range changed:', newStartDate, newEndDate);
     setStartDate(newStartDate);
     setEndDate(newEndDate);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Awaiting Approval':
+        return '#FFA500';
+      case 'Approved':
+        return '#27ae60';
+      case 'Rejected':
+        return '#e74c3c';
+      default:
+        return colors.textSecondary;
+    }
+  };
+
+  const handleEditDeal = (dealId: string) => {
+    console.log('Deal Analysis: Editing deal', dealId);
+  };
+
+  const handleViewDeal = (dealId: string) => {
+    console.log('Deal Analysis: Viewing deal', dealId);
+  };
+
+  const handleDeleteDeal = (dealId: string) => {
+    console.log('Deal Analysis: Deleting deal', dealId);
   };
 
   const renderFormulaTable1 = (optionIndex: number, option: OptionData) => {
@@ -481,10 +578,10 @@ export default function DealAnalysisScreen() {
         </View>
 
         {option.lowerOn && !option.rackOn && (
-          <>
+          <React.Fragment>
             {renderFormulaTable1(index, option)}
             {renderFormulaTable2(index, option)}
-          </>
+          </React.Fragment>
         )}
 
         {option.rackOn && renderRackFormula(index, option)}
@@ -495,89 +592,188 @@ export default function DealAnalysisScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Deal Analysis</Text>
-        <Text style={styles.subtitle}>Analyze and configure deal options with detailed parameters</Text>
-      </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Deal Analysis</Text>
+          <Text style={styles.subtitle}>Analyze and configure deal options with detailed parameters</Text>
+        </View>
 
-      <View style={styles.analysisSection}>
-        <Text style={styles.sectionTitle}>Analysis Option</Text>
-        <Text style={styles.sectionSubtitle}>Select the customer and date for this deal analysis</Text>
+        <View style={styles.analysisSection}>
+          <Text style={styles.sectionTitle}>Analysis Option</Text>
+          <Text style={styles.sectionSubtitle}>Select the customer and date for this deal analysis</Text>
 
-        <View style={styles.customerSection}>
-          <View style={styles.toggleContainer}>
-            <Text style={styles.label}>New Customer</Text>
-            <TouchableOpacity
-              style={[styles.toggle, isNewCustomer && styles.toggleActive]}
-              onPress={() => setIsNewCustomer(!isNewCustomer)}
-            >
-              <View style={[styles.toggleThumb, isNewCustomer && styles.toggleThumbActive]} />
-            </TouchableOpacity>
-          </View>
-
-          {isNewCustomer ? (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Customer Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter new customer name"
-                placeholderTextColor={colors.textSecondary}
-                value={newCustomerName}
-                onChangeText={setNewCustomerName}
-              />
+          <View style={styles.customerSection}>
+            <View style={styles.toggleContainer}>
+              <Text style={styles.label}>New Customer</Text>
+              <TouchableOpacity
+                style={[styles.toggle, isNewCustomer && styles.toggleActive]}
+                onPress={() => setIsNewCustomer(!isNewCustomer)}
+              >
+                <View style={[styles.toggleThumb, isNewCustomer && styles.toggleThumbActive]} />
+              </TouchableOpacity>
             </View>
-          ) : (
-            <Dropdown
-              label="Select Customer"
-              placeholder="All customers"
-              value={selectedCustomer}
-              options={customerOptions}
-              onValueChange={setSelectedCustomer}
-            />
-          )}
 
-          <View style={styles.dateRangeContainer}>
-            <Text style={styles.label}>Date Range</Text>
-            <TouchableOpacity
-              style={styles.dateRangeButton}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <IconSymbol
-                ios_icon_name="calendar"
-                android_material_icon_name="calendar_today"
-                size={20}
-                color={colors.textSecondary}
+            {isNewCustomer ? (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Customer Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter new customer name"
+                  placeholderTextColor={colors.textSecondary}
+                  value={newCustomerName}
+                  onChangeText={setNewCustomerName}
+                />
+              </View>
+            ) : (
+              <Dropdown
+                label="Select Customer"
+                placeholder="All customers"
+                value={selectedCustomer}
+                options={customerOptions}
+                onValueChange={setSelectedCustomer}
               />
-              <Text style={styles.dateRangeText}>
-                {formatDateRange()}
-              </Text>
-            </TouchableOpacity>
+            )}
+
+            <View style={styles.dateRangeContainer}>
+              <Text style={styles.label}>Date Range</Text>
+              <TouchableOpacity
+                style={styles.dateRangeButton}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <IconSymbol
+                  ios_icon_name="calendar"
+                  android_material_icon_name="calendar_today"
+                  size={20}
+                  color={colors.textSecondary}
+                />
+                <Text style={styles.dateRangeText}>
+                  {formatDateRange()}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
 
-      <View style={styles.optionsContainer}>
-        {options.map((option, index) => renderOption(option, index))}
-      </View>
+        <View style={styles.dealsSection}>
+          <View style={styles.dealsSectionHeader}>
+            <Text style={styles.sectionTitle}>Showing {deals.length} deals</Text>
+          </View>
 
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveAnalysis}>
-          <Text style={styles.saveButtonText}>Save Analysis</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.resetButton}>
-          <Text style={styles.resetButtonText}>Reset</Text>
-        </TouchableOpacity>
-      </View>
+          {deals.map((deal, index) => (
+            <View key={index} style={styles.dealCard}>
+              <View style={styles.dealCardHeader}>
+                <Text style={styles.dealCustomerName}>{deal.customerName}</Text>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(deal.status) }]}>
+                  <Text style={styles.statusText}>{deal.status}</Text>
+                </View>
+              </View>
 
-      <DateRangePicker
-        visible={showDatePicker}
-        onClose={() => setShowDatePicker(false)}
-        startDate={startDate}
-        endDate={endDate}
-        onDateRangeChange={handleDateRangeChange}
-      />
-    </ScrollView>
+              <Text style={styles.dealDateRange}>{deal.dateRange}</Text>
+
+              <View style={styles.dealInfoSection}>
+                <View style={styles.dealInfoRow}>
+                  <Text style={styles.dealInfoLabel}>PRODUCT</Text>
+                  <Text style={styles.dealInfoValue}>{deal.product}</Text>
+                </View>
+
+                <View style={styles.dealInfoRow}>
+                  <Text style={styles.dealInfoLabel}>LOCATION</Text>
+                  <Text style={styles.dealInfoValue}>{deal.location}</Text>
+                </View>
+              </View>
+
+              <View style={styles.dealTypeSection}>
+                <TouchableOpacity style={styles.hideDetailsButton}>
+                  <IconSymbol
+                    ios_icon_name="chevron.up"
+                    android_material_icon_name="expand_less"
+                    size={16}
+                    color={colors.primary}
+                  />
+                  <Text style={styles.hideDetailsText}>Hide Details</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.dealDetailsSection}>
+                <View style={styles.dealDetailRow}>
+                  <Text style={styles.dealDetailLabel}>DEAL TYPE</Text>
+                  <Text style={styles.dealDetailValue}>{deal.dealType}</Text>
+                </View>
+
+                <View style={styles.dealDetailRow}>
+                  <Text style={styles.dealDetailLabel}>SUBMISSION</Text>
+                  <Text style={styles.dealDetailValue}>
+                    {deal.submittedBy} - {deal.submittedDate}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.dealActions}>
+                <TouchableOpacity
+                  style={styles.dealActionButton}
+                  onPress={() => handleEditDeal(deal.id)}
+                >
+                  <IconSymbol
+                    ios_icon_name="pencil"
+                    android_material_icon_name="edit"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dealActionButton}
+                  onPress={() => handleViewDeal(deal.id)}
+                >
+                  <IconSymbol
+                    ios_icon_name="eye"
+                    android_material_icon_name="visibility"
+                    size={18}
+                    color={colors.textSecondary}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.dealActionButton}
+                  onPress={() => handleDeleteDeal(deal.id)}
+                >
+                  <IconSymbol
+                    ios_icon_name="trash"
+                    android_material_icon_name="delete"
+                    size={18}
+                    color={colors.secondary}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.optionsContainer}>
+          {options.map((option, index) => renderOption(option, index))}
+        </View>
+
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveAnalysis}>
+            <Text style={styles.saveButtonText}>Save Analysis</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.resetButton}>
+            <Text style={styles.resetButtonText}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+
+        <DateRangePicker
+          visible={showDatePicker}
+          onClose={() => setShowDatePicker(false)}
+          startDate={startDate}
+          endDate={endDate}
+          onDateRangeChange={handleDateRangeChange}
+        />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -585,6 +781,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  scrollView: {
+    flex: 1,
   },
   contentContainer: {
     padding: 16,
@@ -689,6 +888,113 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     marginLeft: 8,
+  },
+  dealsSection: {
+    marginBottom: 24,
+  },
+  dealsSectionHeader: {
+    marginBottom: 16,
+  },
+  dealCard: {
+    backgroundColor: colors.card,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 3,
+  },
+  dealCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  dealCustomerName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    flex: 1,
+    marginRight: 12,
+  },
+  statusBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.white,
+  },
+  dealDateRange: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 16,
+  },
+  dealInfoSection: {
+    marginBottom: 12,
+  },
+  dealInfoRow: {
+    marginBottom: 8,
+  },
+  dealInfoLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  dealInfoValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  dealTypeSection: {
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: 12,
+  },
+  hideDetailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  hideDetailsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 4,
+  },
+  dealDetailsSection: {
+    marginBottom: 16,
+  },
+  dealDetailRow: {
+    marginBottom: 12,
+  },
+  dealDetailLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  dealDetailValue: {
+    fontSize: 13,
+    color: colors.text,
+    lineHeight: 18,
+  },
+  dealActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  dealActionButton: {
+    padding: 8,
+    marginLeft: 12,
   },
   optionsContainer: {
     marginBottom: 24,

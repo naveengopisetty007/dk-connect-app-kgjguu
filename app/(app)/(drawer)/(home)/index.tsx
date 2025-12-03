@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { colors } from '@/styles/commonStyles';
@@ -312,225 +313,231 @@ export default function HomeScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.cardsGrid}>
-        {dashboardCards.map((card, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.card, { backgroundColor: card.color }]}
-            onPress={() => handleCardPress(card.title)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.cardHeader}>
-              <IconSymbol
-                ios_icon_name={card.icon}
-                android_material_icon_name={card.androidIcon}
-                size={32}
-                color={colors.primary}
-              />
-            </View>
-            <Text style={styles.cardValue}>{card.value}</Text>
-            <Text style={styles.cardTitle}>{card.title}</Text>
-            <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.commentsSection}>
-        <View style={styles.sectionHeader}>
-          <IconSymbol
-            ios_icon_name="bubble.left.and.bubble.right.fill"
-            android_material_icon_name="comment"
-            size={24}
-            color={colors.primary}
-          />
-          <Text style={styles.sectionTitle}>Recent Comments</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+        <View style={styles.cardsGrid}>
+          {dashboardCards.map((card, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.card, { backgroundColor: card.color }]}
+              onPress={() => handleCardPress(card.title)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.cardHeader}>
+                <IconSymbol
+                  ios_icon_name={card.icon}
+                  android_material_icon_name={card.androidIcon}
+                  size={32}
+                  color={colors.primary}
+                />
+              </View>
+              <Text style={styles.cardValue}>{card.value}</Text>
+              <Text style={styles.cardTitle}>{card.title}</Text>
+              <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <View style={styles.commentForm}>
-          <View style={styles.formRow}>
-            <View style={styles.toggleContainer}>
-              <Text style={styles.label}>New Customer</Text>
-              <TouchableOpacity
-                style={[styles.toggle, isNewCustomer && styles.toggleActive]}
-                onPress={() => setIsNewCustomer(!isNewCustomer)}
-              >
-                <View style={[styles.toggleThumb, isNewCustomer && styles.toggleThumbActive]} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {isNewCustomer ? (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Customer Name</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter new customer name"
-                placeholderTextColor={colors.textSecondary}
-                value={newCustomerName}
-                onChangeText={setNewCustomerName}
-              />
-            </View>
-          ) : (
-            <Dropdown
-              label="Select Customer"
-              placeholder="Select a customer"
-              value={selectedCustomer}
-              options={customers}
-              onValueChange={setSelectedCustomer}
+        <View style={styles.commentsSection}>
+          <View style={styles.sectionHeader}>
+            <IconSymbol
+              ios_icon_name="bubble.left.and.bubble.right.fill"
+              android_material_icon_name="comment"
+              size={24}
+              color={colors.primary}
             />
-          )}
-
-          <View style={styles.formRow}>
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <Dropdown
-                label="Subject"
-                placeholder="Select subject"
-                value={subject}
-                options={subjectOptions}
-                onValueChange={setSubject}
-              />
-            </View>
-
-            <View style={{ flex: 1, marginLeft: 8 }}>
-              <Dropdown
-                label="Submission Type"
-                placeholder="Select type"
-                value={submissionType}
-                options={submissionTypeOptions}
-                onValueChange={setSubmissionType}
-              />
-            </View>
+            <Text style={styles.sectionTitle}>Recent Comments</Text>
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Write a comment</Text>
-            <View style={styles.commentInputContainer}>
-              <TextInput
-                style={styles.commentInput}
-                placeholder="Share your thoughts..."
-                placeholderTextColor={colors.textSecondary}
-                value={commentText}
-                onChangeText={setCommentText}
-                multiline
-                numberOfLines={4}
-              />
-              <View style={styles.commentActions}>
-                <TouchableOpacity style={styles.iconButton} onPress={handlePickFile}>
-                  <IconSymbol
-                    ios_icon_name="paperclip"
-                    android_material_icon_name="attach_file"
-                    size={20}
-                    color={colors.textSecondary}
-                  />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton}>
-                  <IconSymbol
-                    ios_icon_name="face.smiling"
-                    android_material_icon_name="emoji_emotions"
-                    size={20}
-                    color={colors.textSecondary}
-                  />
+          <View style={styles.commentForm}>
+            <View style={styles.formRow}>
+              <View style={styles.toggleContainer}>
+                <Text style={styles.label}>New Customer</Text>
+                <TouchableOpacity
+                  style={[styles.toggle, isNewCustomer && styles.toggleActive]}
+                  onPress={() => setIsNewCustomer(!isNewCustomer)}
+                >
+                  <View style={[styles.toggleThumb, isNewCustomer && styles.toggleThumbActive]} />
                 </TouchableOpacity>
               </View>
             </View>
-            {selectedFiles.length > 0 && (
-              <Text style={styles.fileCount}>{selectedFiles.length} file(s) selected</Text>
+
+            {isNewCustomer ? (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Customer Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter new customer name"
+                  placeholderTextColor={colors.textSecondary}
+                  value={newCustomerName}
+                  onChangeText={setNewCustomerName}
+                />
+              </View>
+            ) : (
+              <Dropdown
+                label="Select Customer"
+                placeholder="Select a customer"
+                value={selectedCustomer}
+                options={customers}
+                onValueChange={setSelectedCustomer}
+              />
             )}
+
+            <View style={styles.formRow}>
+              <View style={{ flex: 1, marginRight: 8 }}>
+                <Dropdown
+                  label="Subject"
+                  placeholder="Select subject"
+                  value={subject}
+                  options={subjectOptions}
+                  onValueChange={setSubject}
+                />
+              </View>
+
+              <View style={{ flex: 1, marginLeft: 8 }}>
+                <Dropdown
+                  label="Submission Type"
+                  placeholder="Select type"
+                  value={submissionType}
+                  options={submissionTypeOptions}
+                  onValueChange={setSubmissionType}
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Write a comment</Text>
+              <View style={styles.commentInputContainer}>
+                <TextInput
+                  style={styles.commentInput}
+                  placeholder="Share your thoughts..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  multiline
+                  numberOfLines={4}
+                />
+                <View style={styles.commentActions}>
+                  <TouchableOpacity style={styles.iconButton} onPress={handlePickFile}>
+                    <IconSymbol
+                      ios_icon_name="paperclip"
+                      android_material_icon_name="attach_file"
+                      size={20}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconButton}>
+                    <IconSymbol
+                      ios_icon_name="face.smiling"
+                      android_material_icon_name="emoji_emotions"
+                      size={20}
+                      color={colors.textSecondary}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {selectedFiles.length > 0 && (
+                <Text style={styles.fileCount}>{selectedFiles.length} file(s) selected</Text>
+              )}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+              onPress={handleSubmitComment}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.white} />
+              ) : (
+                <React.Fragment>
+                  <IconSymbol
+                    ios_icon_name="paperplane.fill"
+                    android_material_icon_name="send"
+                    size={20}
+                    color={colors.white}
+                  />
+                  <Text style={styles.submitButtonText}>Post Comment</Text>
+                </React.Fragment>
+              )}
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]}
-            onPress={handleSubmitComment}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.white} />
+          <View style={styles.commentsList}>
+            {loadingComments ? (
+              <ActivityIndicator size="large" color={colors.primary} />
+            ) : comments.length === 0 ? (
+              <Text style={styles.noComments}>No comments yet. Be the first to comment!</Text>
             ) : (
-              <>
-                <IconSymbol
-                  ios_icon_name="paperplane.fill"
-                  android_material_icon_name="send"
-                  size={20}
-                  color={colors.white}
-                />
-                <Text style={styles.submitButtonText}>Post Comment</Text>
-              </>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.commentsList}>
-          {loadingComments ? (
-            <ActivityIndicator size="large" color={colors.primary} />
-          ) : comments.length === 0 ? (
-            <Text style={styles.noComments}>No comments yet. Be the first to comment!</Text>
-          ) : (
-            comments.map((comment, index) => (
-              <View key={index} style={styles.commentItem}>
-                <View style={styles.commentHeader}>
-                  <View style={styles.commentAvatar}>
-                    <IconSymbol
-                      ios_icon_name="person.circle.fill"
-                      android_material_icon_name="account_circle"
-                      size={40}
-                      color={colors.primary}
-                    />
+              comments.map((comment, index) => (
+                <View key={index} style={styles.commentItem}>
+                  <View style={styles.commentHeader}>
+                    <View style={styles.commentAvatar}>
+                      <IconSymbol
+                        ios_icon_name="person.circle.fill"
+                        android_material_icon_name="account_circle"
+                        size={40}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <View style={styles.commentInfo}>
+                      <Text style={styles.commentAuthor}>{getCommentAuthorName(comment)}</Text>
+                      <Text style={styles.commentMeta}>
+                        {comment.customer_name} • {comment.submission_type}
+                      </Text>
+                    </View>
+                    <Text style={styles.commentTime}>{getTimeElapsed(comment.created_at)}</Text>
                   </View>
-                  <View style={styles.commentInfo}>
-                    <Text style={styles.commentAuthor}>{getCommentAuthorName(comment)}</Text>
-                    <Text style={styles.commentMeta}>
-                      {comment.customer_name} • {comment.submission_type}
-                    </Text>
-                  </View>
-                  <Text style={styles.commentTime}>{getTimeElapsed(comment.created_at)}</Text>
-                </View>
-                <Text style={styles.commentText}>{comment.body}</Text>
-                <View style={styles.commentActionsRow}>
-                  <TouchableOpacity
-                    style={styles.commentAction}
-                    onPress={() => handleLikeComment(comment.id)}
-                  >
-                    <IconSymbol
-                      ios_icon_name="hand.thumbsup"
-                      android_material_icon_name="thumb_up"
-                      size={18}
-                      color={colors.textSecondary}
-                    />
-                    <Text style={styles.commentActionText}>Like</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.commentAction}>
-                    <IconSymbol
-                      ios_icon_name="bubble.left"
-                      android_material_icon_name="reply"
-                      size={18}
-                      color={colors.textSecondary}
-                    />
-                    <Text style={styles.commentActionText}>Reply</Text>
-                  </TouchableOpacity>
-                  {comment.author === user?.id && (
+                  <Text style={styles.commentText}>{comment.body}</Text>
+                  <View style={styles.commentActionsRow}>
                     <TouchableOpacity
                       style={styles.commentAction}
-                      onPress={() => handleDeleteComment(comment.id)}
+                      onPress={() => handleLikeComment(comment.id)}
                     >
                       <IconSymbol
-                        ios_icon_name="trash"
-                        android_material_icon_name="delete"
+                        ios_icon_name="hand.thumbsup"
+                        android_material_icon_name="thumb_up"
                         size={18}
-                        color={colors.secondary}
+                        color={colors.textSecondary}
                       />
-                      <Text style={[styles.commentActionText, { color: colors.secondary }]}>
-                        Delete
-                      </Text>
+                      <Text style={styles.commentActionText}>Like</Text>
                     </TouchableOpacity>
-                  )}
+                    <TouchableOpacity style={styles.commentAction}>
+                      <IconSymbol
+                        ios_icon_name="bubble.left"
+                        android_material_icon_name="reply"
+                        size={18}
+                        color={colors.textSecondary}
+                      />
+                      <Text style={styles.commentActionText}>Reply</Text>
+                    </TouchableOpacity>
+                    {comment.author === user?.id && (
+                      <TouchableOpacity
+                        style={styles.commentAction}
+                        onPress={() => handleDeleteComment(comment.id)}
+                      >
+                        <IconSymbol
+                          ios_icon_name="trash"
+                          android_material_icon_name="delete"
+                          size={18}
+                          color={colors.secondary}
+                        />
+                        <Text style={[styles.commentActionText, { color: colors.secondary }]}>
+                          Delete
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
-              </View>
-            ))
-          )}
+              ))
+            )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -539,9 +546,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  scrollView: {
+    flex: 1,
+  },
   contentContainer: {
     padding: 16,
     paddingTop: Platform.OS === 'android' ? 16 : 0,
+    paddingBottom: 100,
   },
   cardsGrid: {
     flexDirection: 'row',
