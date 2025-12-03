@@ -7,13 +7,11 @@ import {
   ScrollView,
   Platform,
   TouchableOpacity,
-  Modal,
-  TextInput,
 } from 'react-native';
 import { colors } from '@/styles/commonStyles';
 import { IconSymbol } from '@/components/IconSymbol';
 import Dropdown, { DropdownOption } from '@/components/Dropdown';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateRangePicker from '@/components/DateRangePicker';
 
 interface DealSubmission {
   id: string;
@@ -30,12 +28,9 @@ export default function DealSubmissionScreen() {
   const [dealStatus, setDealStatus] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [showStartPicker, setShowStartPicker] = useState(false);
-  const [showEndPicker, setShowEndPicker] = useState(false);
-  const [showDateModal, setShowDateModal] = useState(false);
-  const [datePickerMode, setDatePickerMode] = useState<'start' | 'end'>('start');
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+  const [showDateRangePicker, setShowDateRangePicker] = useState(false);
 
   // Sample data for the table
   const [dealSubmissions] = useState<DealSubmission[]>([
@@ -97,7 +92,8 @@ export default function DealSubmissionScreen() {
     { label: 'E85', value: 'e85' },
   ];
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | null) => {
+    if (!date) return '';
     return date.toLocaleDateString('en-US', {
       month: '2-digit',
       day: '2-digit',
@@ -105,47 +101,10 @@ export default function DealSubmissionScreen() {
     });
   };
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
-    console.log('Date picker event:', event.type, selectedDate);
-    
-    if (Platform.OS === 'android') {
-      setShowStartPicker(false);
-      setShowEndPicker(false);
-    }
-
-    if (event.type === 'dismissed') {
-      setShowStartPicker(false);
-      setShowEndPicker(false);
-      return;
-    }
-
-    if (selectedDate) {
-      if (datePickerMode === 'start') {
-        setStartDate(selectedDate);
-        if (Platform.OS === 'ios') {
-          setShowStartPicker(false);
-          setTimeout(() => {
-            setDatePickerMode('end');
-            setShowEndPicker(true);
-          }, 300);
-        }
-      } else {
-        setEndDate(selectedDate);
-        if (Platform.OS === 'ios') {
-          setShowEndPicker(false);
-        }
-      }
-    }
-  };
-
-  const openDatePicker = () => {
-    console.log('Opening date picker, Platform:', Platform.OS);
-    if (Platform.OS === 'web') {
-      setShowDateModal(true);
-    } else {
-      setDatePickerMode('start');
-      setShowStartPicker(true);
-    }
+  const handleDateRangeChange = (start: Date | null, end: Date | null) => {
+    console.log('Date range changed:', start, end);
+    setStartDate(start);
+    setEndDate(end);
   };
 
   const handleSearch = () => {
@@ -167,123 +126,6 @@ export default function DealSubmissionScreen() {
 
   const handleDelete = (id: string) => {
     console.log('Delete deal:', id);
-  };
-
-  const renderDatePicker = () => {
-    if (Platform.OS === 'web') {
-      return (
-        <Modal
-          visible={showDateModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowDateModal(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowDateModal(false)}
-          >
-            <View style={styles.dateModalContent}>
-              <Text style={styles.dateModalTitle}>Select Date Range</Text>
-              <View style={styles.dateInputsContainer}>
-                <View style={styles.dateInputGroup}>
-                  <Text style={styles.label}>Start Date</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formatDate(startDate)}
-                    editable={false}
-                  />
-                </View>
-                <View style={styles.dateInputGroup}>
-                  <Text style={styles.label}>End Date</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formatDate(endDate)}
-                    editable={false}
-                  />
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.dateModalButton}
-                onPress={() => setShowDateModal(false)}
-              >
-                <Text style={styles.dateModalButtonText}>Done</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      );
-    }
-
-    return (
-      <>
-        {showStartPicker && (
-          <Modal
-            visible={showStartPicker}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setShowStartPicker(false)}
-          >
-            <View style={styles.datePickerModalOverlay}>
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select Start Date</Text>
-                  <TouchableOpacity
-                    style={styles.datePickerDoneButton}
-                    onPress={() => {
-                      setShowStartPicker(false);
-                      setTimeout(() => {
-                        setDatePickerMode('end');
-                        setShowEndPicker(true);
-                      }, 300);
-                    }}
-                  >
-                    <Text style={styles.datePickerDoneText}>Next</Text>
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={startDate}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={handleDateChange}
-                  style={styles.datePicker}
-                />
-              </View>
-            </View>
-          </Modal>
-        )}
-        {showEndPicker && (
-          <Modal
-            visible={showEndPicker}
-            transparent
-            animationType="slide"
-            onRequestClose={() => setShowEndPicker(false)}
-          >
-            <View style={styles.datePickerModalOverlay}>
-              <View style={styles.datePickerContainer}>
-                <View style={styles.datePickerHeader}>
-                  <Text style={styles.datePickerTitle}>Select End Date</Text>
-                  <TouchableOpacity
-                    style={styles.datePickerDoneButton}
-                    onPress={() => setShowEndPicker(false)}
-                  >
-                    <Text style={styles.datePickerDoneText}>Done</Text>
-                  </TouchableOpacity>
-                </View>
-                <DateTimePicker
-                  value={endDate}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                  onChange={handleDateChange}
-                  style={styles.datePicker}
-                  minimumDate={startDate}
-                />
-              </View>
-            </View>
-          </Modal>
-        )}
-      </>
-    );
   };
 
   return (
@@ -310,7 +152,7 @@ export default function DealSubmissionScreen() {
               <Text style={styles.label}>Date Range</Text>
               <TouchableOpacity
                 style={styles.dateRangeButton}
-                onPress={openDatePicker}
+                onPress={() => setShowDateRangePicker(true)}
               >
                 <IconSymbol
                   ios_icon_name="calendar"
@@ -319,7 +161,9 @@ export default function DealSubmissionScreen() {
                   color={colors.textSecondary}
                 />
                 <Text style={styles.dateRangeText}>
-                  {formatDate(startDate)} - {formatDate(endDate)}
+                  {startDate && endDate
+                    ? `${formatDate(startDate)} - ${formatDate(endDate)}`
+                    : 'Select date range'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -427,7 +271,13 @@ export default function DealSubmissionScreen() {
         </ScrollView>
       </View>
 
-      {renderDatePicker()}
+      <DateRangePicker
+        visible={showDateRangePicker}
+        onClose={() => setShowDateRangePicker(false)}
+        startDate={startDate}
+        endDate={endDate}
+        onDateRangeChange={handleDateRangeChange}
+      />
     </ScrollView>
   );
 }
@@ -478,16 +328,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     marginBottom: 8,
   },
-  input: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    fontSize: 14,
-    color: colors.text,
-  },
   dateRangeContainer: {
     marginBottom: 8,
   },
@@ -506,6 +346,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     marginLeft: 8,
+    flex: 1,
   },
   searchButton: {
     flexDirection: 'row',
@@ -598,84 +439,5 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     padding: 4,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  dateModalContent: {
-    backgroundColor: colors.card,
-    borderRadius: 12,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
-    boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.2)',
-    elevation: 5,
-  },
-  dateModalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 16,
-  },
-  dateInputsContainer: {
-    marginBottom: 16,
-  },
-  dateInputGroup: {
-    marginBottom: 12,
-  },
-  dateModalButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  dateModalButtonText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  datePickerModalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  datePickerContainer: {
-    backgroundColor: colors.card,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-  },
-  datePickerHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  datePickerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  datePickerDoneButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  datePickerDoneText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.white,
-  },
-  datePicker: {
-    width: '100%',
-    height: 260,
   },
 });
